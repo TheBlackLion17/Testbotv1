@@ -1,6 +1,6 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from info import CHANNELS, MOVIE_UPDATE_CHANNEL, TARGET_BOT
+from info import CHANNELS, MOVIE_UPDATE_CHANNEL, TARGET_BOT_USERNAME
 
 @Client.on_message(filters.chat(CHANNELS) & filters.media)
 async def auto_broadcast(bot, message):
@@ -36,7 +36,7 @@ async def auto_broadcast(bot, message):
         [[
             InlineKeyboardButton(
                 "🔍 Get Movie Files",
-                url=f"https://t.me/{TARGET_BOT}?start={title.replace(' ', '_')}"
+                url=f"https://t.me/{TARGET_BOT_USERNAME}?start={title.replace(' ', '_')}"
             )
         ]]
     )
