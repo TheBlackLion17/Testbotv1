@@ -61,8 +61,6 @@ async def start(client, message):
     button = InlineKeyboardMarkup([
         [InlineKeyboardButton("📢 Updates", url="https://t.me/AgsModsOG"),
         InlineKeyboardButton("💬 Support", url="https://t.me/AgsModsOG")],
-        [InlineKeyboardButton("🛠️ Help", callback_data='help'),
-        InlineKeyboardButton("❤️‍🩹 About", callback_data='about')],
         [InlineKeyboardButton("🧑‍💻 Developer 🧑‍💻", url="https://t.me/ags_mods_bot")]
         ])
     
