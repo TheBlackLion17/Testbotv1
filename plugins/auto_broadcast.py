@@ -1,64 +1,79 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from info import *
+from config import CHANNELS
 from os import environ
 
- # bot to forward to
+MOVIE_UPDATE_CHANNEL = int(environ.get("MOVIE_UPDATE_CHANNEL", "0"))
+TARGET_BOT = environ.get("TARGET_BOT_USERNAME")  # without @
 
-# Listen for new messages in monitored channels
 @Client.on_message(filters.chat(CHANNELS))
-async def movie_update_broadcast(client, message):
-    if message.document or message.video or message.audio:
-        file_name = message.document.file_name if message.document else (
-                    message.video.file_name if message.video else message.audio.file_name)
+async def auto_movie_broadcast(client, message):
 
-        broadcast_text = f"""
-🎬 Title : {file_name}
+    if not (message.document or message.video or message.audio):
+        return
+
+    title = (
+        message.document.file_name
+        if message.document else
+        message.video.file_name
+        if message.video else
+        "New Movie"
+    )
+
+    media_group_id = message.media_group_id or "single"
+
+    text = f"""
+🎬 Title : {title}
 🎗️ Genre : Stage 5 Productions
 🗓️ Year : 2025
 🎫 OTT : 23rd January 2025
-🔊 Language : 𝗛𝗶𝗻𝗱𝗶
-🎞️ Quality : 𝗛𝗗𝗥𝗶𝗽
-📤 Upload : 𝗠𝗼𝘃𝗶𝗲𝘀 𝗛𝘂𝗯
-        """
+🔊 Language : Hindi
+🎞️ Quality : HDRip
+📤 Upload : Movies Hub
+"""
 
-        # Forward the actual file
+    keyboard = InlineKeyboardMarkup(
+        [[
+            InlineKeyboardButton(
+                "🎯 Get Related Files",
+                callback_data=f"sendall|{message.chat.id}|{media_group_id}"
+            )
+        ]]
+    )
+
+    await client.send_message(
+        chat_id=MOVIE_UPDATE_CHANNEL,
+        text=text,
+        reply_markup=keyboard
+    )
+
+
+@Client.on_callback_query(filters.regex("^sendall"))
+async def send_all_files(client, query):
+
+    _, chat_id, group_id = query.data.split("|")
+    chat_id = int(chat_id)
+
+    await query.answer("📤 Sending all files…", show_alert=False)
+
+    if group_id == "single":
+        # Send last message only
         await client.forward_messages(
-            chat_id=MOVIE_UPDATE_CHANNEL,
-            from_chat_id=message.chat.id,
-            message_ids=message.message_id
-        )
-
-        # Add inline button
-        keyboard = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("🎯 Get Related", callback_data=f"forward_{message.chat.id}_{message.message_id}")]
-            ]
-        )
-
-        # Send the broadcast text with inline button
-        await client.send_message(
-            chat_id=MOVIE_UPDATE_CHANNEL,
-            text=broadcast_text,
-            reply_markup=keyboard
-        )
-
-# Handle button click
-@Client.on_callback_query()
-async def button_click(client, callback_query):
-    data = callback_query.data
-
-    if data.startswith("forward_"):
-        _, chat_id, msg_id = data.split("_")
-        chat_id = int(chat_id)
-        msg_id = int(msg_id)
-
-        # Forward the message to target bot
-        forwarded_msg = await client.forward_messages(
-            chat_id=TARGET_BOT_USERNAME,
+            chat_id=TARGET_BOT,
             from_chat_id=chat_id,
-            message_ids=msg_id
+            message_ids=query.message.reply_to_message.message_id
         )
+        return
 
-        # Notify the user
-        await callback_query.answer("✅ Request sent! Check the related content.", show_alert=True)
+    # Fetch all messages in media group
+    messages = []
+    async for msg in client.get_chat_history(chat_id, limit=50):
+        if msg.media_group_id == group_id:
+            messages.append(msg.message_id)
+
+    if messages:
+        await client.forward_messages(
+            chat_id=TARGET_BOT,
+            from_chat_id=chat_id,
+            message_ids=messages
+        )
