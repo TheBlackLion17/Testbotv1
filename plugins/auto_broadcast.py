@@ -1,10 +1,9 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import CHANNELS
+from info import *
 from os import environ
 
-MOVIE_UPDATE_CHANNEL = int(environ.get("MOVIE_UPDATE_CHANNEL", "0"))
-TARGET_BOT = environ.get("TARGET_BOT_USERNAME")  # without @
+
 
 @Client.on_message(filters.chat(CHANNELS))
 async def auto_movie_broadcast(client, message):
