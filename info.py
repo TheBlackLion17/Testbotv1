@@ -14,6 +14,7 @@ def is_enabled(value, default):
 API_ID    = os.environ.get("API_ID","20919286")
 API_HASH  = os.environ.get("API_HASH","57b85f72104db3f08f9795b0410eb556")
 BOT_TOKEN = os.environ.get("BOT_TOKEN","8397223439:AAG8WgvvMJGH5BUrOCErP5RYweOp6wiD5JY")
+LOG_CHANNEL= "@logags"
 
 # Bot settings
 WEB_SUPPORT = bool(environ.get("WEBHOOK", 'True')) # for web support on/off
@@ -59,7 +60,7 @@ SHORT_API = environ.get("SHORT_API")
 
 # Others
 IMDB_DELET_TIME = int(environ.get('IMDB_DELET_TIME', "300"))
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '@logags'))
+LOG_CHANNEL = environ.get('LOG_CHANNEL', LOG_CHANNEL)
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'Ags_Updates')
 P_TTI_SHOW_OFF = is_enabled(environ.get('P_TTI_SHOW_OFF', "True"), True)
 PM_IMDB = is_enabled(environ.get('PM_IMDB', "True"), True)
