@@ -7,7 +7,7 @@ from info import *
 movie_db = MovieDB()
 
 
-@Client.on_message(filters.chat(DUMP_CHANNELS) & (filters.document | filters.video))
+@Client.on_message(filters.chat(CHANNELS) & (filters.document | filters.video))
 async def index_movies(client, message):
 
     filename = (
