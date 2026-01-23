@@ -1,73 +1,49 @@
-import os, re, json, base64, logging, random, asyncio
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from info import FORCE_SUB_CHANNEL
 
-from Script import script
-from database.users_chats_db import db
-from pyrogram import Client, filters, enums
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.errors import FloodWait
-
-from info import (
-    CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL,
-    PICS, START_MESSAGE, SUPPORT_CHAT
-)
-from utils import temp
-
-logger = logging.getLogger(__name__)
-
-# ================= START MESSAGE ================= #
-
-START_MESSAGE = """
-👋 Hello {user} !
-
-🎬 Welcome to {bot} 🍿  
-Your ultimate destination for **Latest Movies & Series Updates**.
-
-✨ What I can do for you:
-• 📢 Instant movie update alerts  
-• 🎞️ High-quality movie uploads  
-• 🔎 Find related movies & series  
-• ⚡ Fast & smooth experience  
-
-📌 How to use:
-1️⃣ Join our movie update channel  
-2️⃣ Watch for new movie posts  
-3️⃣ Click **🎯 Get Related Files**  
-4️⃣ Enjoy all related content instantly  
-
-💡 Tip: Add me to your group to enable auto-filtering.
-
-🚀 Stay connected & enjoy unlimited entertainment!
-"""
-
-# ================= START HANDLER ================= #
-
-
-@Client.on_message(filters.private & filters.command(["start"]))
-async def start(client, message):
-    user_id = message.chat.id
-    old = insert(int(user_id))
-    
+# Force-subscribe check
+async def is_subscribed(client, user_id):
     try:
-        id = message.text.split(' ')[1]
-    except IndexError:
-        id = None
+        member = await client.get_chat_member(FORCE_SUB_CHANNEL, user_id)
+        return member.status not in ("left", "kicked")
+    except Exception:
+        return False
 
-    loading_sticker_message = await message.reply_sticker("CAACAgUAAxkBAAJZtmZSPxpeDEIwobQtSQnkeGbwNjsyAAJjDgACjPuwVS9WyYuOlsqENQQ")
-    await asyncio.sleep(2)
-    await loading_sticker_message.delete()
-    
-    text = f"""Hello {message.from_user.mention} \n\n➻ This Is An Advanced And Yet Powerful Rename Bot.\n\n➻ Using This Bot You Can Rename And Change Thumbnail Of Your Files.\n\n➻ You Can Also Convert Video To File Aɴᴅ File To Video.\n\n➻ This Bot Also Supports Custom Thumbnail And Custom Caption.\n\n<b>Bot Is Made By @AgsModsOG</b>"""
-    
-    button = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📢 Updates", url="https://t.me/AgsModsOG"),
-        InlineKeyboardButton("💬 Support", url="https://t.me/AgsModsOG")],
-        [InlineKeyboardButton("🧑‍💻 Developer 🧑‍💻", url="https://t.me/ags_mods_bot")]
-        ])
-    
-    await message.reply_photo(
-        photo=START_PIC,
-        caption=text,
-        reply_markup=button,
-        quote=True
+
+@Client.on_message(filters.command("start") & filters.private)
+async def start_cmd(client, message):
+
+    # Check force-subscribe
+    if not await is_subscribed(client, message.from_user.id):
+        await message.reply_text(
+            "🚫 You must join our updates channel to use this bot!",
+            reply_markup=InlineKeyboardMarkup(
+                [[
+                    InlineKeyboardButton(
+                        "📢 Join Channel",
+                        url=f"https://t.me/{FORCE_SUB_CHANNEL}"
+                    )
+                ]]
+            )
         )
-    return    
+        return
+
+    # Normal start message
+    buttons = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🎬 Movie Updates", url=f"https://t.me/{FORCE_SUB_CHANNEL}")],
+            [InlineKeyboardButton("ℹ️ Help", callback_data="help")]
+        ]
+    )
+
+    await message.reply_text(
+        text=(
+            "👋 **Welcome to Movies Hub Bot!**\n\n"
+            "🎥 I provide movie files in multiple qualities.\n"
+            "📢 Movies are posted in the update channel.\n\n"
+            "Click **Get Files** on a movie post to receive files instantly 🚀"
+        ),
+        reply_markup=buttons,
+        disable_web_page_preview=True
+    )
