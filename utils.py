@@ -319,29 +319,6 @@ async def get_shortlink(link):
         logger.error(e)
         return link
 
-def parse_movie(filename: str):
-    clean = filename.replace("_", ".").replace("-", ".")
-
-    year_match = re.search(r"(19|20)\d{2}", clean)
-    quality_match = re.search(
-        r"(480p|720p|1080p|2160p|HDRip|WEBRip|BluRay)",
-        clean,
-        re.I
-    )
-
-    name = clean
-    if year_match:
-        name = clean.split(year_match.group())[0]
-
-    name = re.sub(r"\.(mkv|mp4|avi|mov).*", "", name, flags=re.I)
-    name = name.replace(".", " ").strip()
-
-    return (
-        name.title(),
-        year_match.group() if year_match else "Unknown",
-        quality_match.group() if quality_match else "Unknown"
-    
-
 
 # from Midukki-RoBoT
 def extract_time(time_val):
@@ -383,6 +360,30 @@ async def admin_filter(filt, client, message):
     return await admin_check(message)
 
 
+
+
+def parse_movie(filename: str):
+    clean = filename.replace("_", ".").replace("-", ".")
+
+    year_match = re.search(r"(19|20)\d{2}", clean)
+    quality_match = re.search(
+        r"(480p|720p|1080p|2160p|HDRip|WEBRip|BluRay)",
+        clean,
+        re.I
+    )
+
+    name = clean
+    if year_match:
+        name = clean.split(year_match.group())[0]
+
+    name = re.sub(r"\.(mkv|mp4|avi|mov|webm).*", "", name, flags=re.I)
+    name = name.replace(".", " ").strip()
+
+    movie_name = name.title()
+    movie_year = year_match.group() if year_match else "Unknown"
+    movie_quality = quality_match.group() if quality_match else "Unknown"
+
+    return movie_name, movie_year, movie_quality
 
 
 
