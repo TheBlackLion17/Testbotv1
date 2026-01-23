@@ -4,7 +4,7 @@ from database.movie_db import MovieDB
 from info import *
 
 
-movie_db = MovieDB 
+movie_db = MovieDB()
 
 
 async def is_subscribed(client, user_id):
