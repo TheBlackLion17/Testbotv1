@@ -21,6 +21,8 @@ WEB_SUPPORT = bool(environ.get("WEBHOOK", 'True')) # for web support on/off
 PICS = (environ.get('PICS' ,'https://files.catbox.moe/g00ax7.jpg')).split()
 UPTIME = time.time()
 
+FORCE_SUB_CHANNEL= [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('FORCE_SUB_CHANNEL', '-1001614481524').split()]
+
 # Admins, Channels & Users
 CACHE_TIME = int(environ.get('CACHE_TIME', 300))
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '7705748477').split()]
