@@ -27,7 +27,7 @@ async def send_movie_files(client, query):
                 [[
                     InlineKeyboardButton(
                         "📢 Join Channel",
-                        url="https://t.me/YourChannel"
+                        url="https://t.me/Movies_Hub_OG"
                     )
                 ]]
             )
