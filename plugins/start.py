@@ -2,7 +2,15 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from info import *
 from Script import *
-
+import os,logging,random,asyncio,re,json,base64,tgcrypto
+from pyrogram import Client, filters, enums
+from pyrogram.errors import UserNotParticipant, ChatAdminRequired, PeerIdInvalid, FloodWait
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from database.ia_filterdb import Media, get_file_details, unpack_new_file_id
+from database.users_chats_db import db
+from utils import get_settings, get_size, is_subscribed, save_group_settings, temp
+from database.connections_mdb import active_connection
+logger = logging.getLogger(__name__)
 
 REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"] #don't add any emoji because tg not support all emoji reactions
 
