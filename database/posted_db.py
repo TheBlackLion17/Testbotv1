@@ -1,8 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from info import DATABASE_URI
+from info import DATABASE_URL
 from datetime import datetime
 
-client = AsyncIOMotorClient(DATABASE_URI)
+client = AsyncIOMotorClient(DATABASE_URL)
 db = client["bot_db"]
 series_collection = db["series"]
 
