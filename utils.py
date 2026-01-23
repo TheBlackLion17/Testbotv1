@@ -320,25 +320,27 @@ async def get_shortlink(link):
         return link
 
 def parse_movie(filename: str):
-clean = filename.replace("_", ".").replace("-", ".")
-year = re.search(r"(19|20)\d{2}", clean)
-quality = re.search(r"(480p|720p|1080p|2160p|HDRip|WEBRip|BluRay)", clean, re.I)
+    clean = filename.replace("_", ".").replace("-", ".")
 
+    year_match = re.search(r"(19|20)\d{2}", clean)
+    quality_match = re.search(
+        r"(480p|720p|1080p|2160p|HDRip|WEBRip|BluRay)",
+        clean,
+        re.I
+    )
 
-name = clean
-if year:
-name = clean.split(year.group())[0]
+    name = clean
+    if year_match:
+        name = clean.split(year_match.group())[0]
 
+    name = re.sub(r"\.(mkv|mp4|avi|mov).*", "", name, flags=re.I)
+    name = name.replace(".", " ").strip()
 
-name = re.sub(r"\.(mkv|mp4|avi).*", "", name, flags=re.I)
-name = name.replace(".", " ").strip()
-
-
-return (
-name.title(),
-year.group() if year else "Unknown",
-quality.group() if quality else "Unknown"
-)
+    return (
+        name.title(),
+        year_match.group() if year_match else "Unknown",
+        quality_match.group() if quality_match else "Unknown"
+    
 
 
 # from Midukki-RoBoT
