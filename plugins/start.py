@@ -13,7 +13,7 @@ async def start_cmd(client, message: Message):
     ])
     
     await message.reply_photo(
-        photo=PIC,
+        photo=PICS,
         caption=f"""
 👋 Hello {message.from_user.mention}!
 
