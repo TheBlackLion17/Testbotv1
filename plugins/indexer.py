@@ -57,7 +57,7 @@ from database.movie_db import MovieDB
 from info import *
 
 
-movie_db = MovieDB("mongodb://localhost:27017")
+movie_db = MovieDB()
 
 
 @Client.on_message(filters.chat(DUMP_CHANNELS) & (filters.document | filters.video))
