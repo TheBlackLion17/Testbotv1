@@ -18,7 +18,7 @@ LOG_CHANNEL= "@logags"
 
 # Bot settings
 WEB_SUPPORT = bool(environ.get("WEBHOOK", 'True')) # for web support on/off
-PICS = (environ.get('PICS' ,'https://files.catbox.moe/g00ax7.jpg')).split()
+PICS = (environ.get('PICS' ,'https://files.catbox.moe/733g25.jpg')).split()
 UPTIME = time.time()
 
 FORCE_SUB_CHANNEL= [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('FORCE_SUB_CHANNEL', '-1001614481524').split()]
