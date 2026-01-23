@@ -1,48 +1,129 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from info import FORCE_SUB_CHANNEL
+from info import *
+from Script import *
+
+
+REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"] #don't add any emoji because tg not support all emoji reactions
 
 # Force-subscribe check
-async def is_subscribed(client, user_id):
+@Client.on_message(filters.command("start") & filters.incoming)
+async def start(client, message: Message):
+    user_id = message.from_user.id
+
+    # React with a random emoji from the list
     try:
-        member = await client.get_chat_member(FORCE_SUB_CHANNEL, user_id)
-        return member.status not in ("left", "kicked")
-    except Exception:
-        return False
+        await message.react(emoji=random.choice(REACTIONS), big=True)
+    except:
+        pass
 
+    # Group start
+    if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+        buttons = [
+            [InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')],
+            [InlineKeyboardButton('📢 ᴏᴛᴛ ᴜᴘᴅᴀᴛᴇ 📢', url="https://t.me/+RDsxY-lQ55wwOWI1")],
+            [InlineKeyboardButton('🧩 ʙᴏᴛ ᴜᴘᴅᴀᴛᴇ 🧩', url="https://t.me/AgsModsOG")],
+            [InlineKeyboardButton('🎊 ᴍᴏᴠɪᴇ ᴄʜᴀɴɴᴇʟ 🎊', url="https://t.me/+RDsxY-lQ55wwOWI1")]
+        ]
 
-@Client.on_message(filters.command("start") & filters.private)
-async def start_cmd(client, message):
+        reply_markup = InlineKeyboardMarkup(buttons)
 
-    # Check force-subscribe
-    if not await is_subscribed(client, message.from_user.id):
-        await message.reply_text(
-            "🚫 You must join our updates channel to use this bot!",
-            reply_markup=InlineKeyboardMarkup(
-                [[
-                    InlineKeyboardButton(
-                        "📢 Join Channel",
-                        url="https://t.me/Movies_Hub_OG")
-                ]]
-            )
+        await message.reply(
+            script.START_TXT.format(
+                message.from_user.mention if message.from_user else message.chat.title,
+                temp.U_NAME,
+                temp.B_NAME
+            ),
+            reply_markup=reply_markup
         )
+        await asyncio.sleep(1)
+        if not await db.get_chat(message.chat.id):
+            total = await client.get_chat_members_count(message.chat.id)
+            await client.send_message(
+                LOG_CHANNEL,
+                script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, "Unknown")
+            )
+            await db.add_chat(message.chat.id, message.chat.title)
         return
 
-    # Normal start message
-    buttons = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("🎬 Movie Updates", url=f"https://t.me/{FORCE_SUB_CHANNEL}")],
-            [InlineKeyboardButton("ℹ️ Help", callback_data="help")]
-        ]
-    )
+    # Private start
+    if not await db.is_user_exist(message.from_user.id):
+        await db.add_user(message.from_user.id, message.from_user.first_name)
+        await client.send_message(
+            LOG_CHANNEL,
+            script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention)
+        )
 
-    await message.reply_text(
-        text=(
-            "👋 **Welcome to Movies Hub Bot!**\n\n"
-            "🎥 I provide movie files in multiple qualities.\n"
-            "📢 Movies are posted in the update channel.\n\n"
-            "Click **Get Files** on a movie post to receive files instantly 🚀"
-        ),
-        reply_markup=buttons,
-        disable_web_page_preview=True
-    )
+    # No start parameter
+    if len(message.command) != 2:
+        loading_msg = await message.reply_sticker("CAACAgUAAxkBAAJZtmZSPxpeDEIwobQtSQnkeGbwNjsyAAJjDgACjPuwVS9WyYuOlsqENQQ") 
+        await asyncio.sleep(0.2)
+        await loading_msg.edit("✅ **Process Complete! Welcome to the Bot.**")
+        await asyncio.sleep(1)
+        await loading_msg.delete()
+
+        # Show main menu buttons
+        buttons = [
+            [InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')],
+            [InlineKeyboardButton('📢 ᴏᴛᴛ ᴜᴘᴅᴀᴛᴇ 📢', url="https://t.me/+RDsxY-lQ55wwOWI1")],
+            [InlineKeyboardButton('🧩 ʙᴏᴛ ᴜᴘᴅᴀᴛᴇ 🧩', url="https://t.me/AgsModsOG")],
+            [InlineKeyboardButton('🎊 ᴍᴏᴠɪᴇ ᴄʜᴀɴɴᴇʟ 🎊', url="https://t.me/+RDsxY-lQ55wwOWI1")]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+
+        await message.reply_photo(
+            photo=random.choice(PICS),
+            caption=script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME),
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+        return
+    # Start parameter handling continues below..
+    invite_links = await is_subscribed(client, query=message)
+    if AUTH_CHANNEL and len(invite_links) >= 1:
+        #this is written by tg: @programcrasher
+        btn = []
+        for chnl_num, link in enumerate(invite_links, start=1):
+            if chnl_num == 1:
+                channel_num = "1sᴛ"
+            elif chnl_num == 2:
+                channel_num = "2ɴᴅ"
+            elif chnl_num == 3:
+                channel_num = "3ʀᴅ"
+            else:
+                channel_num = str(chnl_num)+"ᴛʜ"
+            btn.append([
+                InlineKeyboardButton(f"❆ Jᴏɪɴ {channel_num} Cʜᴀɴɴᴇʟ ❆", url=link)
+            ])
+
+        if message.command[1] != "subscribe":
+            try:
+                kk, file_id = message.command[1].split("_", 1)
+                pre = 'checksubp' if kk == 'filep' else 'checksub' 
+                btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", callback_data=f"{pre}#{file_id}")])
+            except (IndexError, ValueError):
+                btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
+        authdel=await client.send_message(
+            chat_id=message.from_user.id,
+            text="**Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ɪɴ ᴏᴜʀ Bᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟs ɢɪᴠᴇɴ ʙᴇʟᴏᴡ sᴏ ʏᴏᴜ ᴅᴏɴ'ᴛ ɢᴇᴛ ᴛʜᴇ ᴍᴏᴠɪᴇ ғɪʟᴇ...\n\nIғ ʏᴏᴜ ᴡᴀɴᴛ ᴛʜᴇ ᴍᴏᴠɪᴇ ғɪʟᴇ, ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ɢɪᴠᴇɴ ʙᴜᴛᴛᴏɴs ʙᴇʟᴏᴡ ᴀɴᴅ ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟs, ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ '↻ Tʀʏ Aɢᴀɪɴ' ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ...\n\nTʜᴇɴ ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ ᴛʜᴇ ᴍᴏᴠɪᴇ ғɪʟᴇs...**",
+            reply_markup=InlineKeyboardMarkup(btn),
+            parse_mode=enums.ParseMode.MARKDOWN
+            )
+        await asyncio.sleep(25)
+        await authdel.delete()
+        return
+    if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
+        buttons = [
+            [InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')],
+            [InlineKeyboardButton('📢 ᴏᴛᴛ ᴜᴘᴅᴀᴛᴇ 📢', url="https://t.me/+RDsxY-lQ55wwOWI1")],
+            [InlineKeyboardButton('🧩 ʙᴏᴛ ᴜᴘᴅᴀᴛᴇ 🧩', url="https://t.me/AgsModsOG")],
+            [InlineKeyboardButton('🎊 ᴍᴏᴠɪᴇ ᴄʜᴀɴɴᴇʟ 🎊', url="https://t.me/+RDsxY-lQ55wwOWI1")]
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        await message.reply_photo(
+            photo=random.choice(PICS),
+            caption=script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME),
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+        return
