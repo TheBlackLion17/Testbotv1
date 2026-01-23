@@ -22,8 +22,7 @@ async def start_cmd(client, message):
                 [[
                     InlineKeyboardButton(
                         "📢 Join Channel",
-                        url=f"https://t.me/{FORCE_SUB_CHANNEL}"
-                    )
+                        url="https://t.me/Movies_Hub_OG")
                 ]]
             )
         )
