@@ -1,35 +1,31 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from info import DATABASE_URL
-from datetime import datetime
+from info import DATABASE_URL  # updated name
+from datetime import datetime, date
 
-client = AsyncIOMotorClient(DATABASE_URL)
+client = AsyncIOMotorClient(DATABASE_URL)  # updated here
 db = client["bot_db"]
 series_collection = db["series"]
 
-# Series tracking
-async def get_series(series_name: str, date: datetime.date):
-    return await series_collection.find_one({"series_name": series_name, "date": date})
-
-async def add_or_update_series(series_name: str, episodes: list, quality: str, date: datetime.date):
+# Store a file for File Bot
+async def add_or_update_file(title, file_id, media_type, quality, file_date: date = date.today()):
     await series_collection.update_one(
-        {"series_name": series_name, "date": date},
-        {"$set": {"episodes": episodes, "quality": quality, "sent": False}},
+        {"title": title, "date": file_date},
+        {"$set": {
+            "file_id": file_id,
+            "media_type": media_type,
+            "quality": quality,
+            "date": file_date
+        }},
         upsert=True
     )
 
-async def mark_series_sent(series_name: str, date: datetime.date):
-    await series_collection.update_one(
-        {"series_name": series_name, "date": date},
-        {"$set": {"sent": True}}
-    )
-
-# File Bot storage
-async def add_or_update_file(title, file_id, media_type, quality, date):
-    await series_collection.update_one(
-        {"title": title, "date": date},
-        {"$set": {"file_id": file_id, "media_type": media_type, "quality": quality}},
-        upsert=True
-    )
-
-async def get_file_by_payload(payload):
-    return await series_collection.find_one({"title": payload})
+# Flexible file lookup
+async def get_file_by_payload_flexible(payload: str):
+    file_data = await series_collection.find_one({"title": payload})
+    if file_data:
+        return file_data
+    file_data = await series_collection.find_one({"title": {"$regex": f"^{payload}$", "$options": "i"}})
+    if file_data:
+        return file_data
+    file_data = await series_collection.find_one({"title": {"$regex": payload, "$options": "i"}})
+    return file_data
